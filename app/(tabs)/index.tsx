@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as SecureStore from "expo-secure-store";
 import {
   Text,
   View,
@@ -6,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { TextInput } from "react-native-paper";
@@ -17,8 +17,29 @@ export default function HomeScreen() {
   const [name, setName] = useState("");
 
   const router = useRouter();
-  const handleSignup = () => {
-    console.log("logged details");
+  const handleSignup = async () => {
+    console.log(email, password);
+    try {
+      const response = await fetch("http://localhost:5001/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.uid) {
+        await SecureStore.setItemAsync("userToken", data.uid);
+      }
+      if (response.ok) {
+        console.log("user registered", data);
+        router.push("/todos");
+      } else {
+        console.error("signup failed:", data.message);
+      }
+    } catch (error) {
+      console.log("signup:", error);
+    }
   };
   return (
     <ImageBackground

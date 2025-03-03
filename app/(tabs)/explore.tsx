@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as SecureStore from "expo-secure-store";
 import {
   Text,
   View,
@@ -6,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { TextInput } from "react-native-paper";
@@ -14,19 +14,36 @@ import { TextInput } from "react-native-paper";
 export default function TabTwoScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
 
   const router = useRouter();
-  const handleSignin = () => {
-    console.log("logged details");
+  const handleSignin = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      console.log(data);
+
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      await SecureStore.setItemAsync("user_token", data.customToken);
+
+      console.log("user signed in successfully!");
+      router.push("/todos");
+    } catch (error) {
+      console.log("Login Error:", error);
+    }
   };
 
   return (
     <ImageBackground
-      source={require("../../assets/Surf.jpeg")} // Ensure image is inside "assets" folder
+      source={require("../../assets/Surf.jpeg")}
       className="flex-1 justify-end items-center mb-8"
-      resizeMode="cover" // Ensures the image covers the entire screen
-    >
+      resizeMode="cover">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View className=" flex w-screen justify-center align-middle rounded-2xl p-4 bg-[white] m-4">
@@ -54,7 +71,7 @@ export default function TabTwoScreen() {
           </View>
           <TouchableOpacity onPress={handleSignin}>
             <Text className="text-lg text-center rounded-lg my-6 text-white font-bold p-4 bg-[#1b3552]">
-              Sign Up
+              Sign In
             </Text>
           </TouchableOpacity>
 
@@ -63,8 +80,7 @@ export default function TabTwoScreen() {
             <Text
               className="text-blue-400"
               onPress={() => {
-                console.log("Signin clicked");
-                router.replace("/");
+                handleSignin;
               }}>
               Sign Up
             </Text>
