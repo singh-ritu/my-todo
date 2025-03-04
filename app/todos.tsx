@@ -73,6 +73,8 @@ export default function TodosScreen() {
 
       if (data.ok) {
         console.log("Todo added:", data);
+        fetchTodos();
+        setInput("");
       } else {
         alert("Failed to add Todo:" + data.message);
       }

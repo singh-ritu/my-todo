@@ -22,6 +22,16 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
+  const getUserId = async () => {
+    const userId = await SecureStore.getItemAsync("userToken");
+    console.log({ userId });
+    setLoggedIn(!!userId);
+  };
+
+  useEffect(() => {
+    getUserId();
+  }, []);
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -31,16 +41,6 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
-
-  const getUserId = async () => {
-    const userId = await SecureStore.getItemAsync("userToken");
-    setLoggedIn(!!userId);
-    return userId;
-  };
-
-  useEffect(() => {
-    getUserId();
-  }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
